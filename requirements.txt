@@ -1,0 +1,12 @@
+flask
+openai
+twilio
+pyngrok
+transformers
+pinecone-client
+langchain
+pypdf
+tiktoken
+tqdm
+pandas 
+-e .
