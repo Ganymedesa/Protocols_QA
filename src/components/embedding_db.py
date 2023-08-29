@@ -23,6 +23,9 @@ import os
 # class DataBaseCreationConfig():
 #     processed_obj_file_path: str = os.path.join('artifacts', 'preprocessor.pkl')
 
+# export OPENAI_API_KEY=api_key
+
+
 
 class DataBaseCreation():
     OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
