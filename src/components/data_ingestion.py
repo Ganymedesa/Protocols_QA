@@ -1,8 +1,10 @@
 import os
+import sys
 import pandas as pd 
 from src.logger import logging 
 from dataclasses import dataclass
 from langchain.document_loaders import PyPDFLoader
+from exception import CustomException
 
 
 
@@ -18,14 +20,17 @@ class DataIngestion:
         logging.info("Data Ingestion stage ... Reading files")
 
         try:
-            loader = PyPDFLoader("../data/Pediatric_Hodgkin_Lymphoma_Protocol_1.pdf")
+            # loader = PyPDFLoader("../data/Pediatric_Hodgkin_Lymphoma_Protocol_1.pdf")
+            loader = PyPDFLoader('Pediatric_Hodgkin_Lymphoma_Protocol_1.pdf')
             pages = loader.load_and_split()
 
             os.makedirs(os.path.dirname(self.ingestion_config.text_file_path), exist_ok=True)
-            logging.info('Finished reading pdf file with {0}', len(pages))
+            # logging.info('Finished reading pdf file with {0}', len(pages))
+            logging.info('Finished Data Ingestion')
+
 
             return pages
 
-        except:
-            pass
+        except Exception as e:
+            raise CustomException(e, sys)
 
