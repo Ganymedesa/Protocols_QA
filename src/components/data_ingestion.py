@@ -24,7 +24,7 @@ class DataIngestion:
             loader = PyPDFLoader('Pediatric_Hodgkin_Lymphoma_Protocol_1.pdf')
             pages = loader.load_and_split()
 
-            os.makedirs(os.path.dirname(self.ingestion_config.text_file_path), exist_ok=True)
+            # os.makedirs(os.path.dirname(self.ingestion_config.text_file_path), exist_ok=True)
             # logging.info('Finished reading pdf file with {0}', len(pages))
             logging.info('Finished Data Ingestion')
 

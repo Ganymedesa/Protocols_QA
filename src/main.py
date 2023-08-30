@@ -3,9 +3,14 @@ from src.components.data_ingestion import DataIngestion
 
 def main():
     # Creating an instance of MyClass
-    obj = DataIngestion()
-    pages = obj.initiate_data_ingestion()
-    print(len(pages))
+    data_obj = DataIngestion()
+    pages = data_obj.initiate_data_ingestion()
+    db_obj = DataBaseCreation(index_name='retrieval-augmentation')
+    vec_db = db_obj.populating_db(pages)
+    query = "Q1: What is the doses of vincristine in the high risk patients with classical Hodgkin lymphoma "
+    db_obj.initiate_objects(vec_db, query)
+    # print(response)
+    # print(len(pages))
 
     # Using the class methods
     # print(obj.get_value())  # Output: 42
