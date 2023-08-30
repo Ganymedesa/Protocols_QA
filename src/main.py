@@ -5,15 +5,20 @@ def main():
     # Creating an instance of MyClass
     data_obj = DataIngestion()
     pages = data_obj.initiate_data_ingestion()
-    db_obj = DataBaseCreation(index_name='retrieval-augmentation')
-    vec_db = db_obj.populating_db(pages)
-    query = "Q1: What is the doses of vincristine in the high risk patients with classical Hodgkin lymphoma "
-    db_obj.initiate_objects(vec_db, query)
-    # print(response)
-    # print(len(pages))
 
-    # Using the class methods
-    # print(obj.get_value())  # Output: 42
+    db_obj = DataBaseCreation('protocol-retrieval-augmentation')
+    db_obj.initialize_vec_db()
+    vec_db = db_obj.populating_db(pages)
+
+    query = "Question: High risk patients in CMR end of 2 cycles but he had initial large mediastinal lymphadenopathy should he receive radiation?"
+    ans = db_obj.initiate_objects(vec_db, query)
+    print(ans)
+    # res = vec_db.similarity_search(
+    #     query,  # our search query
+    #     k=3  # return 3 most relevant docs
+    #     )
+    # print(res)
+    
 
 if __name__ == "__main__":
     main()

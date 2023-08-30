@@ -33,50 +33,51 @@ class DataBaseCreation():
     logging.info("Database object creation started ...")
     logging.info("Initializing API keys and models")
 
-    OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
-    PINECONE_API_KEY = os.environ.get('PINECONE_API_KEY')
-    PINECONE_ENVIRONMENT = os.environ.get('PINECONE_ENVIRONMENT')
-    INDEX_NAME = 'protocol-retrieval-augmentation'
-    MODEL_NAME = 'gpt-3.5-turbo'
-    EMBEDDING_MODEL_NAME = 'text-embedding-ada-002'
+    # MODEL_NAME = 'gpt-3.5-turbo'
+    # EMBEDDING_MODEL_NAME = 'text-embedding-ada-002'
 
     def __init__(self, index_name):
+        self.OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+        self.PINECONE_API_KEY = os.environ.get('PINECONE_API_KEY')
+        self.PINECONE_ENVIRONMENT = os.environ.get('PINECONE_ENVIRONMENT')
+
+        self.index_name = index_name 
         # self.data_processed_path = DataBaseCreationConfig()
-        self.encoding = tiktoken.encoding_for_model(self.MODEL_NAME).name
+        self.encoding = tiktoken.encoding_for_model('gpt-3.5-turbo').name
         self.tokenizer = tiktoken.get_encoding(self.encoding)
-        self.index = self.db_creation()
-        self.embedding = self.model_embedding()
+        # self.index = self.db_creation()
+        # self.embedding = self.model_embedding()
+        self.embed = OpenAIEmbeddings(
+            model='text-embedding-ada-002',
+            openai_api_key=self.OPENAI_API_KEY
+        ) 
+        
 
-
-    def db_creation(self):
+    def initialize_vec_db(self):
         try:
             logging.info("db_creation method started")
+
             pinecone.init(
             api_key=self.PINECONE_API_KEY,
             environment=self.PINECONE_ENVIRONMENT
         )
-
-            if self.INDEX_NAME not in pinecone.list_indexes():
-                # we create a new index
+            if self.index_name not in pinecone.list_indexes():
                 pinecone.create_index(
-                    name=self.INDEX_NAME,
+                    name=self.index_name,
                     metric='cosine',
                     dimension=1536  # 1536 dim of text-embedding-ada-002
                 )
-                index = pinecone.Index(self.INDEX_NAME)
-                logging.info("Finished db_creation")
-                return index
+                self.new_index = pinecone.Index(self.index_name)
+            else:
+                self.new_index = pinecone.Index(self.index_name)
+            logging.info("Finished db_creation")
+            # print(self.new_index.describe_index_stats())
+                # return index
         
             
         except Exception as e:
             raise CustomException(e, sys)
-
-    def model_embedding(self):
-        embed = OpenAIEmbeddings(
-            model=self.EMBEDDING_MODEL_NAME,
-            openai_api_key=self.OPENAI_API_KEY
-        ) 
-        return embed
+                
 
     def tiktoken_len(self, text):
         """calculate the number of tokens in the entire document """
@@ -112,17 +113,17 @@ class DataBaseCreation():
                 # if we have reached the batch_limit we can add texts
                 if len(texts) >= batch_limit:
                     ids = [str(uuid4()) for _ in range(len(texts))]
-                    embeds = self.embedding.embed_documents(texts)
-                    self.index.upsert(vectors=zip(ids, embeds, metadatas))
+                    embeds = self.embed.embed_documents(texts)
+                    self.new_index.upsert(vectors=zip(ids, embeds, metadatas))
                     texts = []
                     metadatas = []
 
             
 
             text_field='text'
-            index = pinecone.Index(self.INDEX_NAME)
+            index = pinecone.Index(self.index_name)
             vectorstore = Pinecone(
-                index, self.embedding.embed_query, text_field
+                index, self.embed.embed_query, text_field
             )
             logging.info("Finished populating database")
             return vectorstore
@@ -134,11 +135,11 @@ class DataBaseCreation():
     def initiate_objects(self, vectorstore, query):
         logging.info("started initiating objects")
 
-        res = vectorstore.similarity_search(
+        vectorstore.similarity_search(
         query,  # our search query
         k=3  # return 3 most relevant docs
         )
-        print(res)
+        # print(res)
 
         llm = ChatOpenAI(
         openai_api_key=self.OPENAI_API_KEY,
@@ -151,10 +152,8 @@ class DataBaseCreation():
             chain_type="stuff",
             retriever=vectorstore.as_retriever()
         )
-
         logging.info("Finished initiating objects")
         
-
-        return 
+        return qa.run(query)
         
 
