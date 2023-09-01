@@ -20,15 +20,10 @@ class DataIngestion:
         logging.info("Data Ingestion stage ... Reading files")
 
         try:
-            # loader = PyPDFLoader("../data/Pediatric_Hodgkin_Lymphoma_Protocol_1.pdf")
-            loader = PyPDFLoader('Pediatric_Hodgkin_Lymphoma_Protocol_1.pdf')
+            loader = PyPDFLoader('src/vectorstore/data/Pediatric_Hodgkin_Lymphoma_Protocol_1.pdf')
             pages = loader.load_and_split()
 
-            # os.makedirs(os.path.dirname(self.ingestion_config.text_file_path), exist_ok=True)
-            # logging.info('Finished reading pdf file with {0}', len(pages))
             logging.info('Finished Data Ingestion')
-
-
             return pages
 
         except Exception as e:

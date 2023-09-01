@@ -4,6 +4,8 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import RetrievalQA
+from langchain.prompts import PromptTemplate
+
 # from src.components.data_ingestion import DataIngestion
 
 from langchain.vectorstores import Pinecone
@@ -42,11 +44,9 @@ class DataBaseCreation():
         self.PINECONE_ENVIRONMENT = os.environ.get('PINECONE_ENVIRONMENT')
 
         self.index_name = index_name 
-        # self.data_processed_path = DataBaseCreationConfig()
         self.encoding = tiktoken.encoding_for_model('gpt-3.5-turbo').name
         self.tokenizer = tiktoken.get_encoding(self.encoding)
-        # self.index = self.db_creation()
-        # self.embedding = self.model_embedding()
+
         self.embed = OpenAIEmbeddings(
             model='text-embedding-ada-002',
             openai_api_key=self.OPENAI_API_KEY
@@ -55,7 +55,7 @@ class DataBaseCreation():
 
     def initialize_vec_db(self):
         try:
-            logging.info("db_creation method started")
+            logging.info("vectorestore creation method started")
 
             pinecone.init(
             api_key=self.PINECONE_API_KEY,
@@ -70,11 +70,8 @@ class DataBaseCreation():
                 self.new_index = pinecone.Index(self.index_name)
             else:
                 self.new_index = pinecone.Index(self.index_name)
-            logging.info("Finished db_creation")
-            # print(self.new_index.describe_index_stats())
-                # return index
+            logging.info("Finished vectorestore")
         
-            
         except Exception as e:
             raise CustomException(e, sys)
                 
@@ -88,7 +85,6 @@ class DataBaseCreation():
         )
         return len(tokens)
 
-
     def populating_db(self, documents):
         try:
             logging.info("Populating database method started")
@@ -101,7 +97,6 @@ class DataBaseCreation():
             separators=['\n\n', '\n', ' ', '']
                 )
             texts = []
-            # ids = []
             metadatas = []
 
             for record in (tqdm(documents)):
@@ -118,8 +113,6 @@ class DataBaseCreation():
                     texts = []
                     metadatas = []
 
-            
-
             text_field='text'
             index = pinecone.Index(self.index_name)
             vectorstore = Pinecone(
@@ -132,28 +125,6 @@ class DataBaseCreation():
             raise CustomException(e, sys)
         
 
-    def initiate_objects(self, vectorstore, query):
-        logging.info("started initiating objects")
-
-        vectorstore.similarity_search(
-        query,  # our search query
-        k=3  # return 3 most relevant docs
-        )
-        # print(res)
-
-        llm = ChatOpenAI(
-        openai_api_key=self.OPENAI_API_KEY,
-        model_name='gpt-3.5-turbo',
-        temperature=0.2
-        )
-
-        qa = RetrievalQA.from_chain_type(
-            llm=llm,
-            chain_type="stuff",
-            retriever=vectorstore.as_retriever()
-        )
-        logging.info("Finished initiating objects")
-        
-        return qa.run(query)
+    
         
 
