@@ -9,4 +9,6 @@ pypdf
 tiktoken
 tqdm
 pandas 
+pymongo[srb]
+python-dotenv
 -e .
