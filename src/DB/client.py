@@ -15,4 +15,4 @@ def insert_message(message, response):
         "message": message,
         "response": response
     }
-    inserted_id = collection.insert_one(doc).inserted_id
+    collection.insert_one(doc).inserted_id
