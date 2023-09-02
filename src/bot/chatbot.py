@@ -1,6 +1,5 @@
 from flask import Flask, request
 import openai
-from src.DB.client import insert_message
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Pinecone
 from langchain.chat_models import ChatOpenAI
@@ -83,7 +82,8 @@ def insert_message(message, response, collection):
         "message": message,
         "response": response
     }
-    collection.insert_one(doc).inserted_id
+    collection.insert_one(doc)
+    return 
 
 def generate_answer(query):
     qa_obj, vec_db, chatbot_collec = initiate_objects()
